@@ -2,6 +2,7 @@ import static org.junit.Assert.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.impl.jobexecutor.JobExecutor;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.test.ActivitiRule;
@@ -35,8 +37,8 @@ public abstract class ActivitiTest
 	@Rule
 	public ActivitiRule activitiRule = new ActivitiRule();
 	
-	protected static String filename = "TravelCertificate.bpmn";
-	protected static String processId = "TravelCertificate";
+	protected static String filename = "Events.bpmn";
+	protected static String processId = "Events";
 	
 	protected static ProcessEngineConfiguration configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration();
 	protected static ProcessEngine engine = configuration.buildProcessEngine();
@@ -46,6 +48,7 @@ public abstract class ActivitiTest
 	protected static RuntimeService runtime = engine.getRuntimeService();
 	protected static TaskService taskService = engine.getTaskService();
 	protected ProcessInstance process;
+	protected JobExecutor jobExecutor;
 	
 	@BeforeClass
 	public static void deployProcess() throws FileNotFoundException {
@@ -53,18 +56,45 @@ public abstract class ActivitiTest
 		//repository.createDeployment().addInputStream("TravelCertificate.bpmn20.xml", new FileInputStream(filename)).deploy();
 	}
 	
-	@Before
-	public void instantiateProcess() {
+	public void startProcess() {
 		this.process = runtime.startProcessInstanceByKey(processId, new HashMap<String, Object>());
-		//System.out.println("Started process instance "+ this.process.getProcessInstanceId());
+		System.out.println("Started process instance "+ this.process.getProcessInstanceId());
+	}
+	public void startProcess(Calendar calendar) {
+		Map<String, Object> vars = new HashMap<String, Object>();
+		vars.put("calendar", calendar);
+		
+		this.process = runtime.startProcessInstanceByKey(processId, vars);
+		System.out.println("Started process instance "+ this.process.getProcessInstanceId());
+	}
+	
+	public void startJobExector(Calendar calendar)
+	{
+		if (calendar != null) {
+			configuration.getClock().reset();
+			configuration.getClock().setCurrentCalendar(calendar);
+		}
+		
+		this.jobExecutor = configuration.getJobExecutor();
+		jobExecutor.start();
+	}
+	public void startJobExector()
+	{
+		this.jobExecutor = configuration.getJobExecutor();
+		jobExecutor.start();
 	}
 	
 	@After
 	public void deleteProcessInstance() {
-		try {
-			runtime.deleteProcessInstance(this.process.getProcessInstanceId(), "Test ended");
-		} catch (ActivitiObjectNotFoundException e) {}
-		//process = null;
+		if (this.process != null) {		
+			try {
+				runtime.deleteProcessInstance(this.process.getProcessInstanceId(), "Test ended");
+			} catch (ActivitiObjectNotFoundException e) {}
+		}
+		
+		if (this.jobExecutor != null) {
+			this.jobExecutor.shutdown();
+		}
 	}
 	
 	/**
@@ -118,5 +148,16 @@ public abstract class ActivitiTest
 			throw new RuntimeException("Task "+ taskDefinitionKey +" does not exist.");
 		
 		return task;
+	}
+	
+	/**
+	 * Returns the value of a variable in the current process.
+	 * 
+	 * @param name
+	 * @return Variable's value.
+	 */
+	protected Object getVariable(String name)
+	{
+		return runtime.getVariable(process.getProcessInstanceId(), name);
 	}
 }
