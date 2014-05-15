@@ -100,7 +100,7 @@ println "Travel request automatically approved"</script>
     </serviceTask>
     <boundaryEvent id="boundarytimer2" name="Timer" attachedToRef="subprocess1" cancelActivity="false">
       <timerEventDefinition>
-        <timeCycle>R3/PT1M5S</timeCycle>
+        <timeCycle>R3/PT1M15S</timeCycle>
       </timerEventDefinition>
     </boundaryEvent>
     <sequenceFlow id="flow15" sourceRef="boundarytimer2" targetRef="mailtask2"></sequenceFlow>
