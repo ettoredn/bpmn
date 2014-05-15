@@ -25,40 +25,28 @@ import org.activiti.engine.delegate.JavaDelegate;
  */
 public class SendEmail implements JavaDelegate
 {
-	// Lazy injected by ActivitiDeployment
-	public static String smtpUsername;
-	public static String smtpPassword;
-	public static String smtpHost;
-	public static Integer smtpPort;
-	public static String defaultFrom;
-	public static boolean useTLS;
-	public static Properties smtpProperties;
-	
 	// Injected
-	private Expression mailSubject;
-	private Expression mailText;
-	private Expression mailRecipient;
-	private Expression mailSender;
-	
-	public SendEmail()
-	{
-		smtpProperties = new Properties();
-		smtpProperties.put("mail.smtp.auth", "true");
-		smtpProperties.put("mail.smtp.starttls.enable", ""+ useTLS);
-		smtpProperties.put("mail.smtp.host", smtpHost);
-		smtpProperties.put("mail.smtp.port", ""+ smtpPort);
-	}
+	protected Expression mailSubject;
+	protected Expression mailText;
+	protected Expression mailRecipient;
+	protected Expression mailSender;
 		
 	@Override
 	public void execute(DelegateExecution execution) throws Exception
 	{
+		Properties smtpProperties = new Properties();
+		smtpProperties.put("mail.smtp.auth", "true");
+		smtpProperties.put("mail.smtp.starttls.enable", ""+ ActivitiDeployment.useTLS);
+		smtpProperties.put("mail.smtp.host", ActivitiDeployment.smtpHost);
+		smtpProperties.put("mail.smtp.port", ""+ ActivitiDeployment.smtpPort);
+		
 		Session session = Session.getInstance(smtpProperties,
 				new javax.mail.Authenticator() {
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(smtpUsername, smtpPassword);
+				return new PasswordAuthentication(ActivitiDeployment.smtpUsername, ActivitiDeployment.smtpPassword);
 			}
 		});
-		String fromString = mailSender != null ? (String) mailSender.getValue(execution) : defaultFrom;
+		String fromString = mailSender != null ? (String) mailSender.getValue(execution) : ActivitiDeployment.defaultFrom;
 		String recipientString = mailRecipient != null ? (String) mailRecipient.getValue(execution) : "ete.dne@gmail.com";
 		String mailTextString = (String) mailText.getValue(execution);
 		String subjectString = (String) mailSubject.getValue(execution);

@@ -62,7 +62,7 @@ public class ManageTravelRequest extends HttpServlet {
 		if (instance == null)
 			return;
 		
-		Boolean approved = Boolean.parseBoolean(request.getParameter("acceptRequest"));
+		Boolean approved = "on".equals(request.getParameter("acceptRequest"));
 		String rejectMotivation = request.getParameter("rejectMotivation");
 		
 		Map<String, Object> params = new HashMap<String, Object>();

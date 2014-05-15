@@ -1,5 +1,7 @@
 package me.ettoredelnegro;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -13,23 +15,52 @@ public class ActivitiDeployment
 {
 	public static final String[] processNames = {"TravelAuthorization"};
 	public static final String deploymentName = "BPMN";
+	public static String smtpUsername;
+	public static String smtpPassword;
+	public static String smtpHost;
+	public static Integer smtpPort;
+	public static String defaultFrom;
+	public static boolean useTLS;
 	
 	protected static ProcessEngine engine;
 	protected static ProcessEngineConfiguration configuration;
 	
+	protected static Connection jdbcConnection;
+	
+	public static ProcessEngineConfiguration getConfiguration()
+	{
+		if (configuration == null)
+			configuration = ProcessEngineConfiguration.createProcessEngineConfigurationFromResourceDefault();
+		
+		return configuration;
+	}
+	
+	public static Connection getConnection()
+	{
+		if (jdbcConnection == null) {
+			try {
+				jdbcConnection = getConfiguration().getDataSource().getConnection();
+			} catch (SQLException e) {
+				throw new RuntimeException("Unable to establish database connection: "+ e.getMessage());
+			}
+		}
+		
+		return jdbcConnection;
+	}
+	
 	public static ProcessEngine getEngine()
 	{
 		if (engine == null) {
-			configuration = ProcessEngineConfiguration.createProcessEngineConfigurationFromResourceDefault();
+			ProcessEngineConfiguration configuration = getConfiguration();
 			engine = configuration.buildProcessEngine();
 			//configuration.getJobExecutor().start();
 			
-			SendEmail.smtpUsername = configuration.getMailServerUsername();
-			SendEmail.smtpPassword = configuration.getMailServerPassword();
-			SendEmail.smtpHost = configuration.getMailServerHost();
-			SendEmail.smtpPort = configuration.getMailServerPort();
-			SendEmail.defaultFrom = configuration.getMailServerDefaultFrom();
-			SendEmail.useTLS = configuration.getMailServerUseTLS();
+			smtpUsername = configuration.getMailServerUsername();
+			smtpPassword = configuration.getMailServerPassword();
+			smtpHost = configuration.getMailServerHost();
+			smtpPort = configuration.getMailServerPort();
+			defaultFrom = configuration.getMailServerDefaultFrom();
+			useTLS = configuration.getMailServerUseTLS();
 		}
 		
 		Boolean alreadyDeployed = engine.getRepositoryService().createDeploymentQuery()
