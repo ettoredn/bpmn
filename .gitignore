@@ -4,5 +4,6 @@
 
 .metadata/
 .bpmn/
+build/
 RemoteSystemsTempFiles/
 target/

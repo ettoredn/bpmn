@@ -37,17 +37,17 @@ public class ManageTravelRequest extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
 	{
-		String pid = request.getParameter("pid");
-		ActivitiProcessInstance instance = ActivitiDeployment.getProcessInstance(pid);
+		Task authorizationApproval = ActivitiDeployment.getEngine().getTaskService().createTaskQuery()
+			.processDefinitionKey("AuthorizationApproval")
+			.taskDefinitionKey("authorizationApproval")
+			.taskCandidateGroup("management")
+			.singleResult();
 		
-		if (instance != null) {
-			// Retrieves tasks for the management group.
-			Task authorizationApproval = instance.createTaskQuery().taskCandidateGroup("management").singleResult();
-		
+		if (authorizationApproval != null) {
 			request.setAttribute("description", authorizationApproval != null ? authorizationApproval.getDescription() : "" );
-			request.setAttribute("pid", pid);
+			request.setAttribute("taskid", authorizationApproval.getId());
 		}
-		
+				
 		RequestDispatcher reqDispatcher = getServletConfig().getServletContext().getRequestDispatcher("/manageRequest.jsp");
 	    reqDispatcher.forward(request,response);
 	}
@@ -56,11 +56,13 @@ public class ManageTravelRequest extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String pid = request.getParameter("pid");
-		ActivitiProcessInstance instance = ActivitiDeployment.getProcessInstance(pid);
-
-		if (instance == null)
+		String taskId = request.getParameter("taskid");
+		
+		if (taskId == null)
 			return;
+
+		Task task = ActivitiDeployment.getTask(taskId);
+		ActivitiProcessInstance instance = ActivitiDeployment.getProcessInstance(task.getProcessInstanceId());
 		
 		Boolean approved = "on".equals(request.getParameter("acceptRequest"));
 		String rejectMotivation = request.getParameter("rejectMotivation");
@@ -69,8 +71,8 @@ public class ManageTravelRequest extends HttpServlet {
 		params.put("travelApproved", approved);
 		params.put("rejectionMotivation", rejectMotivation);
 		
-		instance.completeTask("authorizationApproval", params);
-		
+		ActivitiDeployment.completeTask(taskId, params);
+
 		PrintWriter out = response.getWriter();
 		
 		if (instance.isProcessFinished())

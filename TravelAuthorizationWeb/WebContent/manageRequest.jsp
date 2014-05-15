@@ -9,12 +9,12 @@
 <body>
 <%
 	String description = (String) request.getAttribute("description");
-	String pid = (String) request.getAttribute("pid");
+	String taskid = (String) request.getAttribute("taskid");
 	
 	if (description != null && description.length() > 1) {
 %>
 		<h1><%=description %></h1>
-		<form action="ManageTravelRequest?pid=<%=pid %>" method="POST">
+		<form action="ManageTravelRequest?taskid=<%=taskid %>" method="POST">
 		<label for="acceptRequest">Accept the request?</label>
 		<input type="checkbox" id="acceptRequest" name="acceptRequest" /><br/>
 		<label for="rejectMotivation">Motivation of rejection: </label>

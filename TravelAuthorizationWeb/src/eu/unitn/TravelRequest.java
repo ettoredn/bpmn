@@ -79,8 +79,7 @@ public class TravelRequest extends HttpServlet
 		if (travelRequestTask == null)
 			throw new RuntimeException("travelRequestTask == null");
 		
-		process.getEngine().getTaskService().complete(travelRequestTask.getId(), params);
-		System.out.println("Completed task: "+ travelRequestTask.getId());
+		ActivitiDeployment.completeTask(travelRequestTask.getId(), params);
 			
 		out.println("<html><head><title>Travel request form</title></head><body>");
 		
@@ -88,8 +87,7 @@ public class TravelRequest extends HttpServlet
 			out.println("<h1>Form completed successfully!</h1>");
 		}
 		else {
-			out.println("<h1>Process "+ process.getProcessInstanceId() +" started.</h1>");
-			out.println("<div><a href='ManageTravelRequest?pid="+ process.getProcessInstanceId() +"'>Manage the request</a></div>");
+			out.println("<h2><a href='ManageTravelRequest'>Manage travel request</a></h2>");
 		}
 		out.println("</body></html>");
 		out.close();

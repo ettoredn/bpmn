@@ -5,15 +5,19 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
 
 public class ActivitiDeployment
 {
-	public static final String[] processNames = {"TravelAuthorization"};
+	public static final String[] processNames = {"TravelAuthorization", "AuthorizationApproval"};
 	public static final String deploymentName = "BPMN";
 	public static String smtpUsername;
 	public static String smtpPassword;
@@ -70,8 +74,10 @@ public class ActivitiDeployment
 		if (!alreadyDeployed) {
 			DeploymentBuilder builder = engine.getRepositoryService().createDeployment().name(deploymentName);
 			
-			for (String processName : processNames)
+			for (String processName : processNames) {
 				builder.addClasspathResource(processName + ".bpmn");
+				System.out.println("[Deployment] Added process "+ processName);
+			}
 			
 			builder.deploy();
 		}
@@ -105,5 +111,62 @@ public class ActivitiDeployment
 			throw new RuntimeException("i.getProcessInstanceId() == null");
 		
 		return new ActivitiProcessInstance(i, getEngine());
+	}
+	
+	/**
+	 * Retrieves a task by its id.
+	 * @param taskId
+	 * @return
+	 */
+	public static Task getTask(String taskId) {
+		if (taskId == null)
+			return null;
+		
+		Task task = getEngine().getTaskService().createTaskQuery()
+				.taskId(taskId)
+				.singleResult();
+		
+		if (task == null)
+			throw new RuntimeException("Task "+ taskId +" does not exist.");
+		
+		return task;
+	}
+	
+	/**
+	 * Completes the given user task.
+	 * @param taskId The id of the task.
+	 * @param parameters
+	 */
+	public static void completeTask(String taskId, Map<String, Object> parameters)
+	{
+		Task t = getEngine().getTaskService().createTaskQuery()
+				.taskId(taskId)
+				.singleResult();
+		try {
+			String id = t.getId();
+			getEngine().getTaskService().complete(t.getId(), parameters);
+			System.out.println("[Deployment] User task "+ id +" completed");
+		} catch (ActivitiObjectNotFoundException e) {}
+	}
+	
+	/**
+	 * Checks whether a task as already been executed
+	 * or it is not scheduled for execution.
+	 * 
+	 * @param taskName
+	 * @return
+	 */
+	public static boolean isTaskFinished(String taskId) {
+		Task task = getEngine().getTaskService().createTaskQuery().taskId(taskId).singleResult();
+		
+		if (task == null)
+			return true;
+		
+		HistoricTaskInstance historicTask = getEngine().getHistoryService().createHistoricTaskInstanceQuery()
+				.taskId(taskId)
+				.finished()
+				.singleResult();
+		
+		return historicTask != null;
 	}
 }

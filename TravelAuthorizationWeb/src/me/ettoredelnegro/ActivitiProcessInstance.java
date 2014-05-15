@@ -10,7 +10,6 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
@@ -73,31 +72,6 @@ public class ActivitiProcessInstance implements ProcessInstance
 	}
 	
 	/**
-	 * Checks whether a task as already been executed
-	 * or it is not scheduled for execution.
-	 * 
-	 * @param taskName
-	 * @return
-	 */
-	public boolean isTaskFinished(String taskName) {
-		if (process == null)
-			throw new RuntimeException("process == null");
-
-		Task task = taskService.createTaskQuery().taskDefinitionKey(taskName).singleResult();
-		
-		if (task == null)
-			return true;
-		
-		HistoricTaskInstance historicTask = this.history.createHistoricTaskInstanceQuery()
-				.processInstanceId(this.process.getProcessInstanceId())
-				.taskDefinitionKey(taskName)
-				.finished()
-				.singleResult();
-		
-		return historicTask != null;
-	}
-	
-	/**
 	 * Retrieves a task by its definition key (i.e. id of the diagram).
 	 * 
 	 * @param taskDefinitionKey
@@ -130,39 +104,14 @@ public class ActivitiProcessInstance implements ProcessInstance
 	}
 	
 	/**
-	 * Complete a user task using given parameters.
-	 * @param taskDefinitionKey The "id" of the task.
-	 * @param parameters
-	 */
-	public void completeTask(String taskDefinitionKey, Map<String, Object> parameters)
-	{
-		Task t = this.getTask(taskDefinitionKey);
-		try {
-			String id = t.getId();
-			taskService.complete(t.getId(), parameters);
-			System.out.println("Task "+ id +" completed");
-		} catch (ActivitiObjectNotFoundException e) {}
-	}
-	
-	/**
 	 * Returns the value of a variable in the current process.
 	 * 
 	 * @param name
 	 * @return Variable's value.
 	 */
-	protected Object getVariable(String name)
-	{
-		return runtime.getVariable(process.getProcessInstanceId(), name);
-	}
-	
-	/**
-	 * Returns the engine.
-	 * @return
-	 */
-	public ProcessEngine getEngine()
-	{
-		return this.engine;
-	}
+	protected Object getVariable(String name) { return runtime.getVariable(process.getProcessInstanceId(), name); }
+
+	public ProcessEngine getEngine() { return this.engine; }
 
 	@Override
 	public String getId() { return process.getId(); }
