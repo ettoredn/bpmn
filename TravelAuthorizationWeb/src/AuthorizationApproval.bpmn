@@ -55,7 +55,7 @@ println "Execution "+ (execution == null ? "is null" : "is defined")</script>
     <endEvent id="endevent3" name="End"></endEvent>
     <boundaryEvent id="stupidTimer1" name="Timer1" attachedToRef="authorizationApproval" cancelActivity="true">
       <timerEventDefinition>
-        <timeDuration>PT30S</timeDuration>
+        <timeDuration>PT3M50S</timeDuration>
       </timerEventDefinition>
     </boundaryEvent>
     <scriptTask id="scripttask13" name="Approve request" scriptFormat="groovy" activiti:autoStoreVariables="false">
@@ -67,7 +67,7 @@ execution.setVariable("travelApproved", true)</script>
     <sequenceFlow id="flow35" sourceRef="stupidTimer1" targetRef="scripttask13"></sequenceFlow>
     <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="authorizationApproval" cancelActivity="false">
       <timerEventDefinition>
-        <timeCycle>R1/PT10S</timeCycle>
+        <timeCycle>R3/PT1M15S</timeCycle>
       </timerEventDefinition>
     </boundaryEvent>
     <sequenceFlow id="flow36" sourceRef="boundarytimer1" targetRef="mailtask2"></sequenceFlow>

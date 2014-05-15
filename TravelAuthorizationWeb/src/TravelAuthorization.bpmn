@@ -53,7 +53,7 @@ your request for ${amount} for traveling has been approved.</activiti:expression
     </callActivity>
     <sequenceFlow id="flow21" sourceRef="callactivity1" targetRef="scripttask1"></sequenceFlow>
     <scriptTask id="scripttask1" name="Print result" scriptFormat="groovy" activiti:autoStoreVariables="false">
-      <script>println "Request result: "+ travelApproved</script>
+      <script>println "Request "+ ( travelApproved == true ? "approved" : "rejected" )</script>
     </scriptTask>
     <sequenceFlow id="flow22" sourceRef="scripttask1" targetRef="endevent1"></sequenceFlow>
   </process>
@@ -72,10 +72,10 @@ your request for ${amount} for traveling has been approved.</activiti:expression
         <omgdc:Bounds height="40.0" width="40.0" x="400.0" y="97.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="403.0" y="310.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="584.0" y="250.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="servicetask2" id="BPMNShape_servicetask2">
-        <omgdc:Bounds height="55.0" width="105.0" x="368.0" y="220.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="368.0" y="240.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
         <omgdc:Bounds height="35.0" width="35.0" x="1070.0" y="141.0"></omgdc:Bounds>
@@ -87,10 +87,10 @@ your request for ${amount} for traveling has been approved.</activiti:expression
         <omgdc:Bounds height="55.0" width="105.0" x="250.0" y="174.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
-        <omgdc:Bounds height="55.0" width="105.0" x="610.0" y="90.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="549.0" y="90.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="scripttask1" id="BPMNShape_scripttask1">
-        <omgdc:Bounds height="55.0" width="105.0" x="610.0" y="210.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="549.0" y="166.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
         <omgdi:waypoint x="55.0" y="117.0"></omgdi:waypoint>
@@ -102,21 +102,21 @@ your request for ${amount} for traveling has been approved.</activiti:expression
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
         <omgdi:waypoint x="440.0" y="117.0"></omgdi:waypoint>
-        <omgdi:waypoint x="610.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="549.0" y="117.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="36.0" width="100.0" x="449.0" y="71.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
         <omgdi:waypoint x="420.0" y="137.0"></omgdi:waypoint>
-        <omgdi:waypoint x="420.0" y="220.0"></omgdi:waypoint>
+        <omgdi:waypoint x="420.0" y="240.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="36.0" width="100.0" x="429.0" y="145.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
-        <omgdi:waypoint x="420.0" y="275.0"></omgdi:waypoint>
-        <omgdi:waypoint x="420.0" y="310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="473.0" y="267.0"></omgdi:waypoint>
+        <omgdi:waypoint x="584.0" y="267.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
         <omgdi:waypoint x="152.0" y="145.0"></omgdi:waypoint>
@@ -131,12 +131,12 @@ your request for ${amount} for traveling has been approved.</activiti:expression
         <omgdi:waypoint x="302.0" y="145.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
-        <omgdi:waypoint x="662.0" y="145.0"></omgdi:waypoint>
-        <omgdi:waypoint x="662.0" y="210.0"></omgdi:waypoint>
+        <omgdi:waypoint x="601.0" y="145.0"></omgdi:waypoint>
+        <omgdi:waypoint x="601.0" y="166.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow22" id="BPMNEdge_flow22">
-        <omgdi:waypoint x="662.0" y="265.0"></omgdi:waypoint>
-        <omgdi:waypoint x="420.0" y="310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="601.0" y="221.0"></omgdi:waypoint>
+        <omgdi:waypoint x="601.0" y="250.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
