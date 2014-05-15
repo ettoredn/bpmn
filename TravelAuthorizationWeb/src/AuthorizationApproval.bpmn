@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="AuthorizationApproval" name="Process Authorization" isExecutable="true">
+    <serviceTask id="mailtask1" name="Send mail to student" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[ete.dne@gmail.com]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="from">
+          <activiti:string><![CDATA[ettore@bpmn.unitn.eu]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:expression>Travel request ${ travelApproved ? "approved" : "rejected" }</activiti:expression>
+        </activiti:field>
+        <activiti:field name="text">
+          <activiti:expression>Dear ${studentName} ${studentEmail},
+the manager ${ travelApproved ? "approved" : "rejected" } your travel request of EUR ${amount}.
+${ travelApproved ? "" : "The motivation is: ".concat(rejectionMotivation) }</activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="mailtask2" name="Send reminder" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[ete.dne@gmail.com]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="from">
+          <activiti:string><![CDATA[ettore@bpmn.unitn.eu]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Travel authorization reminder]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="text">
+          <activiti:string><![CDATA[There is one travel request waiting for your approval.]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <endEvent id="endevent2" name="End"></endEvent>
+    <sequenceFlow id="flow17" sourceRef="mailtask2" targetRef="endevent2"></sequenceFlow>
+    <startEvent id="startevent2" name="Start"></startEvent>
+    <userTask id="authorizationApproval" name="Authorization Approval" activiti:candidateGroups="management">
+      <documentation>${studentName} wants ${amount} to travel because ${travelMotivation}</documentation>
+      <extensionElements>
+        <activiti:formProperty id="travelApproved" name="Travel approved" type="boolean" required="true"></activiti:formProperty>
+        <activiti:formProperty id="rejectionMotivation" name="Motivation of rejection" type="string"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow18" sourceRef="authorizationApproval" targetRef="mailtask1"></sequenceFlow>
+    <sequenceFlow id="flow24" sourceRef="startevent2" targetRef="scripttask2"></sequenceFlow>
+    <scriptTask id="scripttask2" name="Print stuff" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>println "Authorization approval process started: "+ studentName +" "+ studentEmail +" "+ amount +" "+ travelMotivation
+println "Execution "+ (execution == null ? "is null" : "is defined")</script>
+    </scriptTask>
+    <sequenceFlow id="flow25" sourceRef="scripttask2" targetRef="authorizationApproval"></sequenceFlow>
+    <endEvent id="endevent3" name="End"></endEvent>
+    <boundaryEvent id="stupidTimer1" name="Timer1" attachedToRef="authorizationApproval" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>PT30S</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <scriptTask id="scripttask13" name="Approve request" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>println "[AuthorizationApproval] Approval timeout fired"
+
+execution.setVariable("travelApproved", true)</script>
+    </scriptTask>
+    <sequenceFlow id="flow34" sourceRef="mailtask1" targetRef="endevent3"></sequenceFlow>
+    <sequenceFlow id="flow35" sourceRef="stupidTimer1" targetRef="scripttask13"></sequenceFlow>
+    <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="authorizationApproval" cancelActivity="false">
+      <timerEventDefinition>
+        <timeCycle>R1/PT10S</timeCycle>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="flow36" sourceRef="boundarytimer1" targetRef="mailtask2"></sequenceFlow>
+    <sequenceFlow id="flow37" sourceRef="scripttask13" targetRef="mailtask1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_AuthorizationApproval">
+    <bpmndi:BPMNPlane bpmnElement="AuthorizationApproval" id="BPMNPlane_AuthorizationApproval">
+      <bpmndi:BPMNShape bpmnElement="mailtask1" id="BPMNShape_mailtask1">
+        <omgdc:Bounds height="55.0" width="105.0" x="364.0" y="41.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailtask2" id="BPMNShape_mailtask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="182.0" y="180.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="217.0" y="260.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent2" id="BPMNShape_startevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="10.0" y="51.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="authorizationApproval" id="BPMNShape_authorizationApproval">
+        <omgdc:Bounds height="74.0" width="105.0" x="210.0" y="32.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="stupidTimer1" id="BPMNShape_stupidTimer1">
+        <omgdc:Bounds height="30.0" width="30.0" x="280.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer1" id="BPMNShape_boundarytimer1">
+        <omgdc:Bounds height="30.0" width="30.0" x="220.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask2" id="BPMNShape_scripttask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="80.0" y="41.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent3" id="BPMNShape_endevent3">
+        <omgdc:Bounds height="35.0" width="35.0" x="520.0" y="51.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="scripttask13" id="BPMNShape_scripttask13">
+        <omgdc:Bounds height="55.0" width="105.0" x="364.0" y="130.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow17" id="BPMNEdge_flow17">
+        <omgdi:waypoint x="234.0" y="235.0"></omgdi:waypoint>
+        <omgdi:waypoint x="234.0" y="260.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
+        <omgdi:waypoint x="315.0" y="69.0"></omgdi:waypoint>
+        <omgdi:waypoint x="364.0" y="68.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow24" id="BPMNEdge_flow24">
+        <omgdi:waypoint x="45.0" y="68.0"></omgdi:waypoint>
+        <omgdi:waypoint x="80.0" y="68.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow25" id="BPMNEdge_flow25">
+        <omgdi:waypoint x="185.0" y="68.0"></omgdi:waypoint>
+        <omgdi:waypoint x="210.0" y="69.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow34" id="BPMNEdge_flow34">
+        <omgdi:waypoint x="469.0" y="68.0"></omgdi:waypoint>
+        <omgdi:waypoint x="520.0" y="68.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow35" id="BPMNEdge_flow35">
+        <omgdi:waypoint x="295.0" y="120.0"></omgdi:waypoint>
+        <omgdi:waypoint x="294.0" y="157.0"></omgdi:waypoint>
+        <omgdi:waypoint x="364.0" y="157.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow36" id="BPMNEdge_flow36">
+        <omgdi:waypoint x="235.0" y="120.0"></omgdi:waypoint>
+        <omgdi:waypoint x="234.0" y="180.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow37" id="BPMNEdge_flow37">
+        <omgdi:waypoint x="416.0" y="130.0"></omgdi:waypoint>
+        <omgdi:waypoint x="416.0" y="96.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
