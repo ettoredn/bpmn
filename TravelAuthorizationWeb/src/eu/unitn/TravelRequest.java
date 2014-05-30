@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import me.ettoredelnegro.ActivitiDeployment;
 import me.ettoredelnegro.ActivitiProcessInstance;
 
-import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 
 /**
@@ -37,17 +37,23 @@ public class TravelRequest extends HttpServlet
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		String pid = (String) request.getSession().getAttribute("pid");
+		
+		if (pid != null) {
+			ActivitiProcessInstance process = ActivitiDeployment.getProcessInstance(pid);
+			Boolean authenticated = (Boolean) process.getVariable("authenticated");
+			
+			if (authenticated) {
+				RequestDispatcher rd = request.getRequestDispatcher("/createRequest.jsp");
+				rd.include(request, response);
+				return;
+			}
+		}
+		
 		response.setContentType("text/html");
 		PrintWriter r = response.getWriter();
 		
-		r.println("<html><body><h1>Some stuff</h1></body></html>");
-		
-		ProcessDefinition p = ActivitiDeployment.getEngine().getRepositoryService().createProcessDefinitionQuery()
-				.processDefinitionKey("TravelAuthorization")
-				.singleResult();
-		
-		r.println("Process exists: "+ p.getKey() + "</h1></body></html>");
+		r.println("<h1>You must <a href='Authenticate'>login</a> first!");
 	}
 
 	/**
