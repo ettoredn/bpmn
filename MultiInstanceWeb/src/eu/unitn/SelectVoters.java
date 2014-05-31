@@ -10,7 +10,6 @@ import org.activiti.engine.delegate.JavaDelegate;
 
 public class SelectVoters implements JavaDelegate
 {
-
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		Connection connection = ActivitiDeployment.getConnection();
@@ -22,6 +21,10 @@ public class SelectVoters implements JavaDelegate
 		Collection<String> voters = new ArrayList<String>();
 		while (rs.next())
 			voters.add(rs.getString(1));
+		
+		rs.close();
+		votersQuery.close();
+		connection.close();
 		
 		execution.setVariable("voters", voters);
 	}

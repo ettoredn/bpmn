@@ -1,63 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
   <collaboration id="Collaboration">
-    <participant id="student" name="Student" processRef="MultiInstance"></participant>
+    <participant id="student" name="Teacher" processRef="MultiInstance"></participant>
   </collaboration>
   <process id="MultiInstance" name="Multi instance web" isExecutable="true">
     <laneSet id="laneSet_MultiInstance">
       <lane id="lane1">
         <flowNodeRef>startevent1</flowNodeRef>
-        <flowNodeRef>usertask1</flowNodeRef>
-        <flowNodeRef>servicetask1</flowNodeRef>
-        <flowNodeRef>callactivity1</flowNodeRef>
-        <flowNodeRef>scripttask1</flowNodeRef>
         <flowNodeRef>endevent1</flowNodeRef>
-        <flowNodeRef>servicetask2</flowNodeRef>
+        <flowNodeRef>voteSubprocess</flowNodeRef>
+        <flowNodeRef>selectVotersService</flowNodeRef>
+        <flowNodeRef>chooseTravelDestinationTask</flowNodeRef>
+        <flowNodeRef>processVotesService</flowNodeRef>
+        <flowNodeRef>printResultScript</flowNodeRef>
       </lane>
     </laneSet>
     <startEvent id="startevent1" name="Start"></startEvent>
-    <userTask id="usertask1" name="Propose travel destination"></userTask>
-    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="usertask1"></sequenceFlow>
-    <sequenceFlow id="flow2" sourceRef="usertask1" targetRef="servicetask1"></sequenceFlow>
-    <serviceTask id="servicetask1" name="Select voters" activiti:class="eu.unitn.SelectVoters" activiti:resultVariableName="voters"></serviceTask>
-    <callActivity id="callactivity1" name="Call activity" calledElement="Vote"></callActivity>
-    <sequenceFlow id="flow3" sourceRef="servicetask1" targetRef="callactivity1"></sequenceFlow>
-    <sequenceFlow id="flow4" sourceRef="callactivity1" targetRef="servicetask2"></sequenceFlow>
-    <sequenceFlow id="flow5" sourceRef="servicetask2" targetRef="scripttask1"></sequenceFlow>
-    <scriptTask id="scripttask1" name="Print result" scriptFormat="groovy" activiti:autoStoreVariables="false">
-      <script>print "Travel to ${travelDestination} has been ${travelApproved ? "approved" : "rejected"}"</script>
+    <userTask id="chooseTravelDestinationTask" name="Propose travel destination" activiti:candidateGroups="teachers">
+      <extensionElements>
+        <activiti:formProperty id="destination" name="Travel destination" type="string" variable="travelDestination" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="chooseTravelDestinationTask"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="chooseTravelDestinationTask" targetRef="selectVotersService"></sequenceFlow>
+    <serviceTask id="selectVotersService" name="Select voters" activiti:class="eu.unitn.SelectVoters"></serviceTask>
+    <callActivity id="voteSubprocess" name="Call activity" calledElement="Vote">
+      <extensionElements>
+        <activiti:in source="travelDestination" target="destination"></activiti:in>
+        <activiti:in source="voter" target="voter"></activiti:in>
+      </extensionElements>
+      <multiInstanceLoopCharacteristics isSequential="false" activiti:collection="${voters}" activiti:elementVariable="voter"></multiInstanceLoopCharacteristics>
+    </callActivity>
+    <sequenceFlow id="flow4" sourceRef="voteSubprocess" targetRef="processVotesService"></sequenceFlow>
+    <sequenceFlow id="flow5" sourceRef="processVotesService" targetRef="printResultScript"></sequenceFlow>
+    <scriptTask id="printResultScript" name="Print result" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>println "Travel to "+ travelDestination +" has been "+ (travelApproved ? "approved" : "rejected")</script>
     </scriptTask>
     <endEvent id="endevent1" name="End"></endEvent>
-    <sequenceFlow id="flow6" sourceRef="scripttask1" targetRef="endevent1"></sequenceFlow>
-    <serviceTask id="servicetask2" name="Process votes" activiti:class="eu.unitn.ProcessVotes"></serviceTask>
+    <sequenceFlow id="flow6" sourceRef="printResultScript" targetRef="endevent1"></sequenceFlow>
+    <serviceTask id="processVotesService" name="Process votes" activiti:class="eu.unitn.ProcessVotes"></serviceTask>
+    <sequenceFlow id="flow7" sourceRef="selectVotersService" targetRef="voteSubprocess"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
     <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
       <bpmndi:BPMNShape bpmnElement="student" id="BPMNShape_student">
-        <omgdc:Bounds height="161.0" width="861.0" x="20.0" y="20.0"></omgdc:Bounds>
+        <omgdc:Bounds height="241.0" width="861.0" x="20.0" y="20.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="lane1" id="BPMNShape_lane1">
-        <omgdc:Bounds height="161.0" width="841.0" x="40.0" y="20.0"></omgdc:Bounds>
+        <omgdc:Bounds height="241.0" width="841.0" x="40.0" y="20.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
         <omgdc:Bounds height="35.0" width="35.0" x="70.0" y="80.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+      <bpmndi:BPMNShape bpmnElement="chooseTravelDestinationTask" id="BPMNShape_chooseTravelDestinationTask">
         <omgdc:Bounds height="55.0" width="105.0" x="140.0" y="70.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
+      <bpmndi:BPMNShape bpmnElement="selectVotersService" id="BPMNShape_selectVotersService">
         <omgdc:Bounds height="55.0" width="105.0" x="270.0" y="70.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
+      <bpmndi:BPMNShape bpmnElement="voteSubprocess" id="BPMNShape_voteSubprocess">
         <omgdc:Bounds height="55.0" width="105.0" x="400.0" y="70.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="scripttask1" id="BPMNShape_scripttask1">
+      <bpmndi:BPMNShape bpmnElement="printResultScript" id="BPMNShape_printResultScript">
         <omgdc:Bounds height="55.0" width="105.0" x="660.0" y="70.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
         <omgdc:Bounds height="35.0" width="35.0" x="800.0" y="80.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="servicetask2" id="BPMNShape_servicetask2">
+      <bpmndi:BPMNShape bpmnElement="processVotesService" id="BPMNShape_processVotesService">
         <omgdc:Bounds height="55.0" width="105.0" x="530.0" y="70.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
@@ -67,10 +77,6 @@
       <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
         <omgdi:waypoint x="245.0" y="97.0"></omgdi:waypoint>
         <omgdi:waypoint x="270.0" y="97.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
-        <omgdi:waypoint x="375.0" y="97.0"></omgdi:waypoint>
-        <omgdi:waypoint x="400.0" y="97.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
         <omgdi:waypoint x="505.0" y="97.0"></omgdi:waypoint>
@@ -83,6 +89,10 @@
       <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
         <omgdi:waypoint x="765.0" y="97.0"></omgdi:waypoint>
         <omgdi:waypoint x="800.0" y="97.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
+        <omgdi:waypoint x="375.0" y="97.0"></omgdi:waypoint>
+        <omgdi:waypoint x="400.0" y="97.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

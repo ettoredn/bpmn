@@ -7,12 +7,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
+import org.activiti.engine.ProcessEngines;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.impl.ProcessEngineImpl;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.IdentityLinkType;
 import org.activiti.engine.task.Task;
 
 public class ActivitiDeployment
@@ -27,36 +33,49 @@ public class ActivitiDeployment
 	public static boolean useTLS;
 	
 	protected static ProcessEngine engine;
-	protected static ProcessEngineConfiguration configuration;
-	
-	protected static Connection jdbcConnection;
 	
 	public static ProcessEngineConfiguration getConfiguration()
 	{
-		if (configuration == null)
-			configuration = ProcessEngineConfiguration.createProcessEngineConfigurationFromResourceDefault();
+		ProcessEngine engine = getEngine();
 		
-		return configuration;
+		return ((ProcessEngineImpl) engine).getProcessEngineConfiguration();
 	}
 	
 	public static Connection getConnection()
 	{
-		if (jdbcConnection == null) {
-			try {
-				jdbcConnection = getConfiguration().getDataSource().getConnection();
-			} catch (SQLException e) {
-				throw new RuntimeException("Unable to establish database connection: "+ e.getMessage());
-			}
+		try {
+			DataSource ds = getConfiguration().getDataSource();
+			Connection c = ds.getConnection();
+			
+			if (c.isClosed())
+				throw new RuntimeException("jdbcConnection.isClosed()");
+			
+			return c;
+		} catch (SQLException e) {
+			throw new RuntimeException("Unable to establish database connection: "+ e.getMessage());
 		}
-		
-		return jdbcConnection;
 	}
 	
 	public static ProcessEngine getEngine()
 	{
 		if (engine == null) {
-			ProcessEngineConfiguration configuration = getConfiguration();
-			engine = configuration.buildProcessEngine();
+			Map<String, ProcessEngine> engines = ProcessEngines.getProcessEngines();
+			for (String name : engines.keySet()) {
+				System.out.println("[ActivitiDeployment] Found "+ name +" engine");
+			}
+			
+			engine = ProcessEngines.getDefaultProcessEngine();
+			if (engine == null) {
+				System.out.println("[ActivitiDeployment] No default process engine found. Creating engine from activiti.cfg.xml");
+				
+				ProcessEngineConfiguration configuration = ProcessEngineConfiguration.createProcessEngineConfigurationFromResourceDefault();
+				engine = configuration.buildProcessEngine();
+			}
+			
+			if (engine == null)
+				throw new RuntimeException("[ActivitiDeployment] Unable to create an engine.");
+			
+			ProcessEngineConfiguration configuration = ((ProcessEngineImpl) engine).getProcessEngineConfiguration();
 			//configuration.getJobExecutor().start();
 			
 			smtpUsername = configuration.getMailServerUsername();
@@ -76,7 +95,7 @@ public class ActivitiDeployment
 			
 			for (String processName : processNames) {
 				builder.addClasspathResource(processName + ".bpmn");
-				System.out.println("[Deployment] Added process "+ processName);
+				System.out.println("[ActivitiDeployment] Added process "+ processName);
 			}
 			
 			builder.deploy();
@@ -105,7 +124,9 @@ public class ActivitiDeployment
 		if (!names.contains(name))
 			throw new RuntimeException("!processNames.contains(name)");
 		
-		ProcessInstance i = getEngine().getRuntimeService().startProcessInstanceByKey(name, new HashMap<String, Object>());
+		RuntimeService runtime = getEngine().getRuntimeService();
+		ProcessInstance i = runtime.startProcessInstanceByKey(name, new HashMap<String, Object>());
+		runtime.addUserIdentityLink(i.getProcessInstanceId(), "ettore", IdentityLinkType.STARTER);
 		
 		if (i.getProcessInstanceId() == null)
 			throw new RuntimeException("i.getProcessInstanceId() == null");
