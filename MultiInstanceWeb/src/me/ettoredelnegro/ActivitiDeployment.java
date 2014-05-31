@@ -34,6 +34,10 @@ public class ActivitiDeployment
 	
 	protected static ProcessEngine engine;
 	
+	/**
+	 * Returns the configuration of the current engine.
+	 * @return
+	 */
 	public static ProcessEngineConfiguration getConfiguration()
 	{
 		ProcessEngine engine = getEngine();
@@ -41,27 +45,35 @@ public class ActivitiDeployment
 		return ((ProcessEngineImpl) engine).getProcessEngineConfiguration();
 	}
 	
+	/**
+	 * Returns a connection to the data source.
+	 * @return
+	 */
 	public static Connection getConnection()
 	{
 		try {
-			DataSource ds = getConfiguration().getDataSource();
-			Connection c = ds.getConnection();
+			DataSource dataSource = getConfiguration().getDataSource();
+			Connection conneection = dataSource.getConnection();
 			
-			if (c.isClosed())
+			if (conneection.isClosed())
 				throw new RuntimeException("jdbcConnection.isClosed()");
 			
-			return c;
+			return conneection;
 		} catch (SQLException e) {
 			throw new RuntimeException("Unable to establish database connection: "+ e.getMessage());
 		}
 	}
 	
+	/**
+	 * Returns or instantiates an engine.
+	 * @return The default engine if available, otherwise an engine instantiated from activiti.cfg.xml
+	 */
 	public static ProcessEngine getEngine()
 	{
 		if (engine == null) {
 			Map<String, ProcessEngine> engines = ProcessEngines.getProcessEngines();
 			for (String name : engines.keySet()) {
-				System.out.println("[ActivitiDeployment] Found "+ name +" engine");
+				System.out.println("[ActivitiDeployment] Available engine: "+ name);
 			}
 			
 			engine = ProcessEngines.getDefaultProcessEngine();
@@ -104,6 +116,10 @@ public class ActivitiDeployment
 		return engine;
 	}
 	
+	/**
+	 * @param id Process instance id
+	 * @return
+	 */
 	public static ActivitiProcessInstance getProcessInstance(String id)
 	{		
 		if (id == null)
