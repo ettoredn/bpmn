@@ -78,10 +78,17 @@ public class ActivitiDeployment
 			
 			engine = ProcessEngines.getDefaultProcessEngine();
 			if (engine == null) {
-				System.out.println("[ActivitiDeployment] No default process engine found. Creating engine from activiti.cfg.xml");
+				System.out.println("[ActivitiDeployment] No default process engine found.");
 				
 				ProcessEngineConfiguration configuration = ProcessEngineConfiguration.createProcessEngineConfigurationFromResourceDefault();
-				engine = configuration.buildProcessEngine();
+				engine = ProcessEngines.getProcessEngine(configuration.getProcessEngineName());
+				
+				if (engine != null)
+					System.out.println("[ActivitiDeployment] Using "+ engine.getName() +" engine.");
+				else {
+					engine = configuration.buildProcessEngine();
+					System.out.println("[ActivitiDeployment] Creating engine from activiti.cfg.xml");
+				}
 			}
 			
 			if (engine == null)
