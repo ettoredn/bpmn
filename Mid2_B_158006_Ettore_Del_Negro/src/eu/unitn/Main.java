@@ -3,6 +3,8 @@ package eu.unitn;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.activiti.engine.task.Task;
+
 import me.ettoredelnegro.ActivitiDeployment;
 import me.ettoredelnegro.ActivitiProcessInstance;
 
@@ -19,5 +21,10 @@ public class Main {
 		
 		ActivitiProcessInstance process = ActivitiDeployment.createProcessInstance("GasLeakageManagement", parameters);
 		
+		Task readOperatorIdTask = process.createTaskQuery().taskCandidateGroup("operator").singleResult();
+		
+		Map<String, Object> v = new HashMap<String, Object>();
+		v.put("operator_id", "ettore");
+		ActivitiDeployment.completeTask(readOperatorIdTask.getId(), v);
 	}
 }

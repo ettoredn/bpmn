@@ -22,7 +22,7 @@ import org.activiti.engine.task.Task;
 
 public class ActivitiDeployment
 {
-	public static final String[] processNames = {"GasLeakageManagement"};
+	public static final String[] processNames = {"GasLeakageManagement", "ManualEmergencyManagement"};
 	public static final String deploymentName = "BPMN";
 	public static String smtpUsername;
 	public static String smtpPassword;

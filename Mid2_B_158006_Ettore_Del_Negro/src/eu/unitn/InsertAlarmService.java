@@ -38,16 +38,16 @@ public class InsertAlarmService implements JavaDelegate {
 			s.close();
 			
 			// Insert alarm and update the alarm_id variable
-			PreparedStatement insert = connection.prepareStatement("INSERT INTO ALARMS(device_id,gas_level,user_id,operator_id) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-			insert.setString(1, deviceId);
-			insert.setLong(2, gasLevel);
-			insert.setString(3, userId);
-			insert.setString(4, operatorId);
-			insert.executeUpdate();
-			ResultSet ids = insert.getGeneratedKeys();
+			PreparedStatement insertAlarm = connection.prepareStatement("INSERT INTO ALARMS(device_id,gas_level,user_id,operator_id) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			insertAlarm.setString(1, deviceId);
+			insertAlarm.setLong(2, gasLevel);
+			insertAlarm.setString(3, userId);
+			insertAlarm.setString(4, operatorId);
+			insertAlarm.executeUpdate();
+			ResultSet ids = insertAlarm.getGeneratedKeys();
 			ids.first();
 			Long alarmId = ids.getLong(1);
-			insert.close();
+			insertAlarm.close();
 			
 			execution.setVariable("alarm_id", alarmId);
 			

@@ -57,7 +57,11 @@ Gas level: ${gas_level}</documentation>
       <startEvent id="errorstartevent1" name="Error start">
         <errorEventDefinition errorRef="failure"></errorEventDefinition>
       </startEvent>
-      <callActivity id="callactivity1" name="Call activity" calledElement="ManualEmergencyManagement"></callActivity>
+      <callActivity id="callactivity1" name="Manual emergency maintenance" calledElement="ManualEmergencyManagement">
+        <extensionElements>
+          <activiti:in sourceExpression="GasLeakageManagement" target="emergencyId"></activiti:in>
+        </extensionElements>
+      </callActivity>
       <sequenceFlow id="flow3" sourceRef="errorstartevent1" targetRef="callactivity1"></sequenceFlow>
       <endEvent id="endevent1" name="End"></endEvent>
       <sequenceFlow id="flow4" sourceRef="callactivity1" targetRef="endevent1"></sequenceFlow>
@@ -93,7 +97,7 @@ Gas level: ${gas_level}</documentation>
           <activiti:string><![CDATA[ettore@bpmn.unitn.eu]]></activiti:string>
         </activiti:field>
         <activiti:field name="subject">
-          <activiti:string><![CDATA[Alarm]]></activiti:string>
+          <activiti:expression>Alarm ${alarm_id}</activiti:expression>
         </activiti:field>
         <activiti:field name="text">
           <activiti:expression>Alarm id: ${alarm_id}
@@ -200,7 +204,7 @@ Operator id: ${operator_id}</activiti:expression>
         <omgdc:Bounds height="35.0" width="35.0" x="130.0" y="380.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
-        <omgdc:Bounds height="55.0" width="105.0" x="200.0" y="370.0"></omgdc:Bounds>
+        <omgdc:Bounds height="71.0" width="105.0" x="200.0" y="362.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
         <omgdc:Bounds height="35.0" width="35.0" x="350.0" y="380.0"></omgdc:Bounds>
